@@ -1,0 +1,26 @@
+# =======================================
+#   ▗▖ ▗▖ ▗▄▖  ▗▄▖ ▗▄▄▖ ▗▄▄▄ ▗▄▄▄▖▗▄▄▖
+#   ▐▌ ▐▌▐▌ ▐▌▐▌ ▐▌▐▌ ▐▌▐▌  █▐▌   ▐▌ ▐▌
+#   ▐▛▀▜▌▐▌ ▐▌▐▛▀▜▌▐▛▀▚▖▐▌  █▐▛▀▀▘▐▛▀▚▖
+#   ▐▌ ▐▌▝▚▄▞▘▐▌ ▐▌▐▌ ▐▌▐▙▄▄▀▐▙▄▄▖▐▌ ▐▌
+#                          sekc
+# =======================================
+
+database:
+  # The path to the database (leave default if you want SQLite (no setup required) local database,
+  # change this if you want to use a different SQL database)
+  filepath: "jdbc:sqlite:plugins/hoarder/database.db"
+
+# Should the plugin broadcast to everyone (e.g when the event ends/starts)
+allow-broadcast: true
+
+event:
+  # Start a new random event when the first one finishes, set this to false if you want to just
+  # do one-off events every now and then with `/hoarder admin start_custom_event`
+  start-random-event-on-completion: true
+
+  # How many seconds long will an event be:
+  # - 604800 = 1 week
+  # - 86400  = 1 day
+  # - 3600   = 1 hour
+  event-length-seconds: 30

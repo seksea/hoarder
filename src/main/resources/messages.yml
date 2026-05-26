@@ -1,0 +1,10 @@
+chat-prefix: "<grey>[<yellow>hoarder</yellow>] </grey>" # Space needs to be before the </grey>, as the end is trimmed
+
+event:
+  # Hoarder start & end messages that are broadcasted to all players (when config.yml allow-broadcast=true)
+  hoarder-starting: "<grey>The <yellow>Hoarder</yellow> is starting!</grey>"
+  hoarder-ending-no-participants: "<grey>The <yellow>Hoarder</yellow> has ended! Unfortunately no-one participated :(<br>  the hoarder yearns for your items.</grey>"
+
+admin:
+  reloading: "Reloading configs."
+  reloaded: "Reloaded configs!"

@@ -1,0 +1,27 @@
+# The title contains these funky characters as the custom resource pack defines them as pngs,
+# change this to a normal title if you are not using a custom resource pack.
+#   = backspace (move text cursor backwards)
+#   = blank dark gui png
+title: ""
+
+# The layout of the UI
+#  a-Z = custom items that you can customise below (cannot be taken)
+#  . = empty space that are completely locked, cannot have items dragged in
+#  _ = custom area, this is used for things such as the feed menu, lets the menu decide how to handle this area
+layout: |
+  . . . . . . . . .
+  . _ _ _ _ _ _ _ .
+  . _ _ _ _ _ _ _ .
+  . _ _ _ _ _ _ _ .
+  . _ _ _ _ _ _ _ .
+  B . . . . . . . .
+
+# Define the items to fill the layout with, the only thing that matters here is the "id", as that controls what
+# the button does, so don't change that, everything else is cosmetic and can be customised.
+items:
+  B:
+    id: "mainmenu"
+    material: BARRIER
+    name: "<red>Back</red>"
+    lore: "<grey>Return to the main menu.</grey>"
+    #lore: "<grey>The <yellow>hoarder</yellow> hungers for <green>GRASS BLOCK</green>.</grey>"

@@ -1,0 +1,10 @@
+name: hoarder
+version: '${version}'
+
+main: me.sekc.hoarder.Hoarder
+api-version: '26.1.2'
+load: POSTWORLD
+
+softdepend: [ PlaceholderAPI ]
+
+authors: [ sekc ]
