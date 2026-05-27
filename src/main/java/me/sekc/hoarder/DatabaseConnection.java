@@ -6,6 +6,8 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.inventory.ItemStack;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class DatabaseConnection {
@@ -186,6 +188,46 @@ public class DatabaseConnection {
 			stmt.setInt(2, data.itemsFedThisEvent);
 			stmt.setString(3, uuid.toString());
 			stmt.executeUpdate();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void resetAllPlayersItemsFed() {
+		try {
+			PreparedStatement stmt = connection.prepareStatement(
+				"UPDATE players SET items_fed_this_event=0"
+			);
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/* *************************************
+	  Leaderboard
+	**************************************** */
+
+	public List<PlayerData> getLeaderboardFromPlayerColumn(String sortColumn, int offset, int limit) {
+		try {
+			PreparedStatement stmt = connection.prepareStatement(
+				"SELECT uuid, total_items_fed, items_fed_this_event FROM players ORDER BY " + sanitiseString(sortColumn) + " DESC LIMIT " + limit + " OFFSET " + offset
+			);
+			try (ResultSet results = stmt.executeQuery()) {
+				List<PlayerData> resultArr = new ArrayList<>();
+				while (results.next()) {
+					int value = results.getInt(sortColumn);
+					if (value == 0) // if the value you're sorting the leaderboard by is 0 then don't add to result
+						continue;
+
+					resultArr.add(new PlayerData(
+						UUID.fromString(results.getString("uuid")),
+						results.getInt("items_fed_this_event"),
+						results.getInt("total_items_fed")
+					));
+				}
+				return resultArr;
+			}
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}

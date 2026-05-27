@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -95,7 +96,22 @@ public class HoarderEventManager {
 		plugin.dbConn.clearCurrentHoarderEvent();
 
 		// broadcast in chat
-		Hoarder.broadcastIfEnabled(MessageFormatter.getAsChatMessageAndDeserialise("event.hoarder-ending-no-participants"));
+		List<DatabaseConnection.PlayerData> leaderboard = plugin.dbConn.getLeaderboardFromPlayerColumn("items_fed_this_event", 0, 5);
+		if (leaderboard.isEmpty()) {
+			Hoarder.broadcastIfEnabled(MessageFormatter.getAsChatMessageAndDeserialise("event.hoarder-ending-no-participants"));
+		} else {
+			Hoarder.broadcastIfEnabled(MessageFormatter.getAsChatMessageAndDeserialise("event.hoarder-ending"));
+			for (int i = 0; i < Math.min(leaderboard.size(), 3); i++) {
+				Hoarder.broadcastIfEnabled(MessageFormatter.getAsChatMessageAndDeserialise("event.hoarder-ending-leaderboard-line", Map.ofEntries(
+					Map.entry("%leaderboard_place%", String.valueOf(i+1)),
+					Map.entry("%player_name%", Bukkit.getOfflinePlayer(leaderboard.get(i).uuid).getName()),
+					Map.entry("%num_items_fed%", String.valueOf(leaderboard.get(i).itemsFedThisEvent))
+				), null));
+			}
+		}
+
+		// reset "item_fed_this_event"
+		plugin.dbConn.resetAllPlayersItemsFed();
 
 		if (allowStartNextEvent && ConfigurationManager.config.getBoolean("event.start-random-event-if-none-running")){
 			startRandomHoarderEvent();

@@ -11,10 +11,10 @@ title: "
 layout: |
   . . . . . . . . .
   . . . . . . . . .
+  . . . . . . . . .
   . . . . H . . . .
   . . L . . . P . .
   . . . . S . . . .
-  . . . . . . . . .
 
 # Define the items to fill the layout with, the only thing that matters here is the "id", as that controls what
 # the button does, so don't change that, everything else is cosmetic and can be customised.
