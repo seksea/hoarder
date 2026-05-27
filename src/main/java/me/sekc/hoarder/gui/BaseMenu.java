@@ -204,7 +204,7 @@ public class BaseMenu {
 				return numSlotsBeforeCustomSlotID;
 			}
 
-			if (item.custom)
+			if (item != null && item.custom)
 				curCustomSlotID++;
 			numSlotsBeforeCustomSlotID++;
 		}

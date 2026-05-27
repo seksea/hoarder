@@ -4,10 +4,8 @@ package me.sekc.hoarder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.inventory.ItemStack;
-import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 import java.sql.*;
-import java.util.Collections;
 import java.util.UUID;
 
 public class DatabaseConnection {
@@ -174,6 +172,20 @@ public class DatabaseConnection {
 					results.getInt("total_items_fed")
 				);
 			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void updatePlayerInDatabase(UUID uuid, PlayerData data) {
+		try {
+			PreparedStatement stmt = connection.prepareStatement(
+				"UPDATE players SET total_items_fed=?, items_fed_this_event=? WHERE uuid=?"
+			);
+			stmt.setInt(1, data.itemsFedTotal);
+			stmt.setInt(2, data.itemsFedThisEvent);
+			stmt.setString(3, uuid.toString());
+			stmt.executeUpdate();
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}

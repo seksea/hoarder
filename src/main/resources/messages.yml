@@ -3,7 +3,7 @@ chat-prefix: "<grey>[<yellow>hoarder</yellow>] </grey>" # Space needs to be befo
 event:
   # Hoarder start & end messages that are broadcasted to all players (when config.yml allow-broadcast=true)
   hoarder-starting: "<grey>The <yellow>Hoarder</yellow> hungers for <green>%item_name%</green>! You have 24 hours...</grey>"
-  hoarder-ending-no-participants: "<grey>The <yellow>Hoarder</yellow> has ended! Unfortunately no-one participated :(<br>  the hoarder yearns for your items.</grey>"
+  hoarder-ending-no-participants: "<grey>The <yellow>Hoarder</yellow> has ended! Unfortunately no-one participated :(</grey>"
   hoarder-ending: "<grey>The <yellow>Hoarder</yellow> has ended! The top 3 players will be awarded:<br> 1. %player_1%: 3 prize items<br> 2. %player_2%: 2 prize items<br> 3. %player_3%: 1 prize item</grey>"
 
 admin:
@@ -24,3 +24,5 @@ gui:
     player-stats-lore: |
       <grey>Items fed this event: <green>%items_fed_this_event%</green></grey>
       <grey>Total items fed: <green>%total_items_fed%</green></grey>
+  feed:
+    fed: "<grey>You fed the <yellow>hoarder</yellow> %items_fed% items.</grey>"

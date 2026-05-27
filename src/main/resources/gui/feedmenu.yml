@@ -9,12 +9,12 @@ title: "
 #  . = empty space that are completely locked, cannot have items dragged in
 #  _ = custom area, this is used for things such as the feed menu, lets the menu decide how to handle this area
 layout: |
-  . . . . . . . . .
-  . _ _ _ _ _ _ _ .
-  . _ _ _ _ _ _ _ .
-  . _ _ _ _ _ _ _ .
-  . _ _ _ _ _ _ _ .
-  B . . . . . . . .
+  _ _ _ _ _ _ _ _ _
+  _ _ _ _ _ _ _ _ _
+  _ _ _ _ _ _ _ _ _
+  _ _ _ _ _ _ _ _ _
+  _ _ _ _ _ _ _ _ _
+  B . . . . . . . F
 
 # Define the items to fill the layout with, the only thing that matters here is the "id", as that controls what
 # the button does, so don't change that, everything else is cosmetic and can be customised.
@@ -24,4 +24,10 @@ items:
     material: BARRIER
     name: "<red>Back</red>"
     lore: "<grey>Return to the main menu.</grey>"
-    #lore: "<grey>The <yellow>hoarder</yellow> hungers for <green>GRASS BLOCK</green>.</grey>"
+  F:
+    id: "feed"
+    material: BONE
+    name: "<dark_red><obf>a<b>a</b>aaa<b>a</b>aa<b>aa</b>aa<b>a</b>aaa<b>a</b></obf></dark_red> <red><b><u>FEED<u></b></red> <dark_red><obf>aaa<b>a</b>aaa<b>a</b>a<b>a</b>aaa<b>a</b>aaa</obf></dark_red>"
+    lore: |
+      <white>Feed the hoarder.</white>
+      <grey>Place the item for the current event in the space above.</grey>

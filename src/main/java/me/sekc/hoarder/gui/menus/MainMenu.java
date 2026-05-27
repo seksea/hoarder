@@ -46,7 +46,7 @@ public class MainMenu extends BaseMenu {
 			if (lItem != null && lItem.id.equals("hoarder")) {
 				HoarderEventManager.HoarderEvent currentEvent = HoarderEventManager.getCurrentEvent();
 				if (currentEvent != null) {
-					lItem.customItemStack = currentEvent.itemStack;
+					lItem.customItemStack = currentEvent.itemStack.clone();
 
 					lItem.customItemStack.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 					lItem.customItemStack.addUnsafeEnchantment(Enchantment.INFINITY, 1);
