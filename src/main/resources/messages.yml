@@ -2,9 +2,25 @@ chat-prefix: "<grey>[<yellow>hoarder</yellow>] </grey>" # Space needs to be befo
 
 event:
   # Hoarder start & end messages that are broadcasted to all players (when config.yml allow-broadcast=true)
-  hoarder-starting: "<grey>The <yellow>Hoarder</yellow> is starting!</grey>"
+  hoarder-starting: "<grey>The <yellow>Hoarder</yellow> hungers for <green>%item_name%</green>! You have 24 hours...</grey>"
   hoarder-ending-no-participants: "<grey>The <yellow>Hoarder</yellow> has ended! Unfortunately no-one participated :(<br>  the hoarder yearns for your items.</grey>"
+  hoarder-ending: "<grey>The <yellow>Hoarder</yellow> has ended! The top 3 players will be awarded:<br> 1. %player_1%: 3 prize items<br> 2. %player_2%: 2 prize items<br> 3. %player_3%: 1 prize item</grey>"
 
 admin:
-  reloading: "Reloading configs."
-  reloaded: "Reloaded configs!"
+  reloading: "<grey>Reloading configs.</grey>"
+  reloaded: "<grey>Reloaded configs!</grey>"
+  itemlist:
+    add-item: "<grey>Added <green>%item_name%</green> to the item list!</grey>"
+    add-item-fail-nothing-in-hand: "<grey>Failed to add an item to the hoarder list, you need an item to add in your hand.</grey>"
+    remove-item: "<grey><green>%item_name%</green> was removed from the item list!</grey>"
+    list-item: "<grey> - <white>%item_name%</white> <click:run_command:hoarder admin itemlist remove %item_name%><yellow><u>[delete]</u></yellow></click></grey>"
+
+gui:
+  main-menu:
+    feed-btn-lore: |
+      <grey>The <yellow>hoarder</yellow> is hungry for <green>%item_name%</green>.</grey>
+      <grey>This event has %pretty_time_remaining% remaining</grey>
+      <grey>Left click to feed the <yellow>hoarder</yellow>!</grey>
+    player-stats-lore: |
+      <grey>Items fed this event: <green>%items_fed_this_event%</green></grey>
+      <grey>Total items fed: <green>%total_items_fed%</green></grey>

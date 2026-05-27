@@ -12,8 +12,8 @@ layout: |
   . . . . . . . . .
   . . . . . . . . .
   . . . . H . . . .
-  . . . . . . . . .
-  . . . . . . . . .
+  . . L . . . P . .
+  . . . . S . . . .
   . . . . . . . . .
 
 # Define the items to fill the layout with, the only thing that matters here is the "id", as that controls what
@@ -22,6 +22,22 @@ items:
   H:
     id: "hoarder"
     material: BARRIER
-    name: "<red><yellow>HOARDER</yellow></red>"
-    lore: "<grey>The <yellow>hoarder</yellow> is not accepting items.</grey>"
-    #lore: "<grey>The <yellow>hoarder</yellow> hungers for <green>GRASS BLOCK</green>.</grey>"
+    name: ""
+    lore: "<grey>The <yellow>hoarder</yellow> is not accepting items right now.</grey>" # this is set based on the message "gui.main-menu.feed-btn-lore"
+  L:
+    id: "leaderboard"
+    material: BOOK
+    name: "<white>Leaderboard</white>"
+    lore: |
+      <grey>View the leaderboard for this event</grey>
+      <grey>and total leaderboard for all events.</grey>
+  P:
+    id: "prizes"
+    material: GOLDEN_CARROT
+    name: "<white>Prizes</white>"
+    lore: "<grey>Collect prizes won from previous hoarder events.</grey>"
+  S:
+    id: "playerstats"
+    material: PLAYER_HEAD
+    name: "<white>Player Stats</white>"
+    lore: "<grey>blah blah</grey>" # this is set based on the message "gui.main-menu.player-stats-lore"

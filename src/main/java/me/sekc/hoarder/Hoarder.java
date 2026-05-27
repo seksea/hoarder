@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Hoarder extends JavaPlugin {
+	public DatabaseConnection dbConn;
 
 	@Override
 	public void onEnable() {
@@ -19,6 +20,18 @@ public final class Hoarder extends JavaPlugin {
 		Logger.log("=======================================");
 
 		ConfigurationManager.loadConfiguration();
+
+		try {
+			dbConn = new DatabaseConnection(getConfig().getString("database.filepath"));
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+		HoarderEventManager.HoarderEvent eventToRestore = dbConn.getCurrentHoarderEvent();
+		if (eventToRestore != null) {
+			Logger.log("Starting the event that was running when the server closed.");
+			HoarderEventManager.startNewHoarderEvent(eventToRestore, false);
+		}
 
 		CommandManager.registerCommands(this);
 

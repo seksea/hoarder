@@ -35,7 +35,7 @@ public class MenuManager {
 		);
 
 		if (entityToOpenGUI instanceof Player player) {
-			closeInventory(player);
+			closeInventory(player, false);
 
 			playerToOpenGUIMap.put(player.getUniqueId(), menu);
 
@@ -53,9 +53,15 @@ public class MenuManager {
 		menuConfigurationCache.clear();
 	}
 
-	static public void closeInventory(Entity playerToCloseGUI) {
+	static public void closeInventory(Entity playerToCloseGUI, boolean nextTick) {
 		if (playerToCloseGUI instanceof Player player) {
-			player.closeInventory(); // Close any currently open gui
+			if (nextTick) {
+				Bukkit.getScheduler().runTaskLater(Hoarder.getPlugin(Hoarder.class), () -> {
+					player.closeInventory();
+				}, 1L);
+			} else {
+				player.closeInventory();
+			}
 		}
 	}
 
@@ -119,5 +125,14 @@ public class MenuManager {
 		}
 
 		playerToTypeInChatMap.remove(playerUUID); // now ran, remove from map
+	}
+
+	static public void closeAllGUIs() {
+		for (UUID uuid : playerToOpenGUIMap.keySet()) {
+			Player player = Bukkit.getPlayer(uuid);
+			if (player != null) {
+				closeInventory(player, true);
+			}
+		}
 	}
 }

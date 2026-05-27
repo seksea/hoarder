@@ -20,11 +20,11 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        /*UUID playerUUID = event.getPlayer().getUniqueId();
-        if (!clans.databaseConnection.playerExists(playerUUID)) {
-            Clans.log("Player " + event.getPlayer().getName() + " joined for the first time, registering them in the database.");
-            clans.databaseConnection.createPlayer(playerUUID);
-        }*/
+        UUID playerUUID = event.getPlayer().getUniqueId();
+        if (!plugin.dbConn.playerExists(playerUUID)) {
+            Logger.log("Player " + event.getPlayer().getName() + " joined for the first time, registering them in the database.");
+            plugin.dbConn.createPlayer(playerUUID);
+        }
     }
 
     @EventHandler

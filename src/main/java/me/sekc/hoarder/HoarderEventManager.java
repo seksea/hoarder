@@ -1,26 +1,37 @@
 package me.sekc.hoarder;
 
+import me.sekc.hoarder.gui.MenuManager;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.concurrent.*;
 
 public class HoarderEventManager {
+	static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+	static ScheduledFuture<?> endTaskFuture = null;
+
 	public static class HoarderEvent {
-		ItemStack itemStack; // The item the hoarder wants (uses .isSimilar) to compare
+		public ItemStack itemStack; // The item the hoarder wants (uses .isSimilar) to compare
 
-		long endTime; // When the event will end (unix epoch seconds)
+		public long endTime; // When the event will end (unix epoch seconds)
 
-		HoarderEvent(ItemStack itemStack, long endTime) {
+		public HoarderEvent(ItemStack itemStack, long endTime) {
 			this.itemStack = itemStack;
 			this.endTime = endTime;
 		}
 	}
 	static HoarderEvent currentEvent = null; // null = no event
 
-	static public void startNewHoarderEvent(HoarderEvent newEvent) {
+	static public void startNewHoarderEvent(HoarderEvent newEvent, boolean saveToDatabase) {
+		Hoarder plugin = Hoarder.getPlugin(Hoarder.class);
+
+		if (currentEvent != null) {
+			throw new RuntimeException("Hoarder tried to start a new event without ending the previous event first!!");
+		}
 		currentEvent = newEvent;
 
 		// How many seconds until the event should end
@@ -29,37 +40,72 @@ public class HoarderEventManager {
 
 		if (secondsUntilEnd <= 0) {
 			// The event already ended (probably because the server was offline during the event ending)
-			Logger.warn("Started hoarder event that has already ended, this probably just means your server was offline during the end, will end it now.");
-			secondsUntilEnd = 0;
+			Logger.warn("Started hoarder event that has already ended (" + Math.abs(secondsUntilEnd) + "sec ago), this probably just means your server was offline during the end, will end it now.");
+			secondsUntilEnd = 1;
+		}
+
+		// cancel old task (schedule() should be a one-off, but seems to be repeating?? wtf)
+		if (endTaskFuture != null) {
+			endTaskFuture.cancel(true);
+		}
+
+		// Schedule ending the event
+		endTaskFuture = scheduler.schedule(() -> {endHoarderEvent();}, secondsUntilEnd, TimeUnit.SECONDS);
+
+		if (saveToDatabase) {
+			// save it in the database for reboot persistence
+			plugin.dbConn.setCurrentHoarderEvent(currentEvent);
 		}
 
 		// broadcast in chat
-		Hoarder.broadcastIfEnabled(MessageFormatter.getAndDeserialise("event.hoarder-starting"));
+		PlainTextComponentSerializer plainTextSerializer = PlainTextComponentSerializer.plainText();
+		String itemName = plainTextSerializer.serialize(Component.translatable(currentEvent.itemStack));
+		Hoarder.broadcastIfEnabled(MessageFormatter.getAsChatMessageAndDeserialise("event.hoarder-starting", Map.ofEntries(
+			Map.entry("%item_name%", itemName)
+		), null));
 
-		// Schedule ending the event
-		Executors.newScheduledThreadPool(1).schedule(HoarderEventManager::endHoarderEvent, secondsUntilEnd, TimeUnit.SECONDS);
+		MenuManager.closeAllGUIs(); // cheap refresh hack
 	}
 
 	static public HoarderEvent startRandomHoarderEvent() {
-		// TODO: pick random item from the database
-		long curSeconds = System.currentTimeMillis() / 1000;
+		Hoarder plugin = Hoarder.getPlugin(Hoarder.class);
+		int numItems = plugin.dbConn.getNumHoarderItems();
+		ItemStack item = plugin.dbConn.getHoarderItemAtIndex(ThreadLocalRandom.current().nextInt(0, numItems));
 
-		startNewHoarderEvent(new HoarderEvent(ItemStack.of(Material.GRASS_BLOCK), curSeconds + ConfigurationManager.getLong("event.event-length-seconds")));
+		long curSeconds = System.currentTimeMillis() / 1000;
+		startNewHoarderEvent(new HoarderEvent(item, curSeconds + ConfigurationManager.getLong("event.event-length-seconds")), true);
 
 		return currentEvent;
 	}
 
-	static public void endHoarderEvent() {
+	static public void endHoarderEvent(boolean allowStartNextEvent) {
+		if (currentEvent == null) {
+			throw new RuntimeException("Hoarder tried to end the event when there was no event running!!");
+		}
+
+		Hoarder plugin = Hoarder.getPlugin(Hoarder.class);
+
+		// Give top 3 players rewards TODO
+
+		// clear event
 		currentEvent = null;
 
-		// broadcast in chat
-		Hoarder.broadcastIfEnabled(MessageFormatter.getAndDeserialise("event.hoarder-ending-no-participants"));
+		// make sure to clear the event so if we restart the server with
+		// "start-random-event-on-completion: false", it won't award it twice
+		plugin.dbConn.clearCurrentHoarderEvent();
 
-		if (ConfigurationManager.config.getBoolean("event.start-random-event-on-completion")){
+		// broadcast in chat
+		Hoarder.broadcastIfEnabled(MessageFormatter.getAsChatMessageAndDeserialise("event.hoarder-ending-no-participants"));
+
+		if (allowStartNextEvent && ConfigurationManager.config.getBoolean("event.start-random-event-if-none-running")){
 			startRandomHoarderEvent();
 		}
-	}
 
+		MenuManager.closeAllGUIs(); // cheap refresh hack
+	}
+	static public void endHoarderEvent() {
+		endHoarderEvent(true);
+	}
 
 	static public HoarderEvent getCurrentEvent() {
 		return currentEvent;

@@ -15,9 +15,10 @@ database:
 allow-broadcast: true
 
 event:
-  # Start a new random event when the first one finishes, set this to false if you want to just
-  # do one-off events every now and then with `/hoarder admin start_custom_event`
-  start-random-event-on-completion: true
+  # Start a new random event when one finishes, or the server starts with no event running.
+  # set this to false if you want to just do one-off events every now and then with
+  # `/hoarder admin start_custom_event`
+  start-random-event-if-none-running: true
 
   # How many seconds long will an event be:
   # - 604800 = 1 week

@@ -3,6 +3,7 @@ package me.sekc.hoarder;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -13,8 +14,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class MessageFormatter {
 	static YamlConfiguration messagesConfig = null;
@@ -87,6 +87,28 @@ public class MessageFormatter {
 		return getAndDeserialise(yamlPath, null, null);
 	}
 
+	static public List<Component> getAndDeserialiseLines(String yamlPath, Map<String, String> customPlaceholders, UUID playerUUID) { // playerUUID is only used for PlaceholderAPI placeholders
+		String raw = getRaw(yamlPath, customPlaceholders, playerUUID);
+		List<Component> result = new ArrayList<>();
+
+		for (String line : raw.split("\\n")) {
+			result.add(MiniMessage.miniMessage().deserialize(
+				line
+			));
+		}
+
+		return result;
+	}
+	static public List<Component> getAndDeserialiseLines(String yamlPath, Map<String, String> customPlaceholders) {
+		return getAndDeserialiseLines(yamlPath, customPlaceholders, null);
+	}
+	static public List<Component> getAndDeserialiseLines(String yamlPath, UUID playerUUID) {
+		return getAndDeserialiseLines(yamlPath, null, playerUUID);
+	}
+	static public List<Component> getAndDeserialiseLines(String yamlPath) {
+		return getAndDeserialiseLines(yamlPath, null, null);
+	}
+
 	static public Component getAsChatMessageAndDeserialise(String yamlPath, Map<String, String> customPlaceholders, UUID playerUUID) {
 		return MiniMessage.miniMessage().deserialize(
 			getRaw("chat-prefix", customPlaceholders, playerUUID) + "<reset>" + getRaw(yamlPath, customPlaceholders, playerUUID)
@@ -94,6 +116,9 @@ public class MessageFormatter {
 	}
 	static public Component getAsChatMessageAndDeserialise(String yamlPath, UUID playerUUID) {
 		return getAsChatMessageAndDeserialise(yamlPath, null, playerUUID);
+	}
+	static public Component getAsChatMessageAndDeserialise(String yamlPath) {
+		return getAsChatMessageAndDeserialise(yamlPath, null, null);
 	}
 
 
