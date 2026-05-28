@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,13 +41,22 @@ public class DatabaseConnection {
 		connection.createStatement().executeUpdate(
 			"CREATE TABLE IF NOT EXISTS players ("
 				+ "   uuid                  VARCHAR(36) NOT NULL PRIMARY KEY,"
-				+ "   total_items_fed      INTEGER NOT NULL DEFAULT 0,"
-				+ "   items_fed_this_event INTEGER NOT NULL DEFAULT 0"
+				+ "   total_items_fed      	INTEGER NOT NULL DEFAULT 0,"
+				+ "   items_fed_this_event 	INTEGER NOT NULL DEFAULT 0,"
+				+ "   pending_prizes 		TEXT" // list of items in bin form
 				+ ")"
 		);
 
 		connection.createStatement().executeUpdate(
 			"CREATE TABLE IF NOT EXISTS hoarder_items ("
+				+ "   id			INTEGER PRIMARY KEY," // row index
+				+ "   item_name		VARCHAR(256) NOT NULL UNIQUE," // The items name
+				+ "   data          TEXT NOT NULL" // Binary data of this item
+				+ ")"
+		);
+
+		connection.createStatement().executeUpdate(
+			"CREATE TABLE IF NOT EXISTS hoarder_prizes ("
 				+ "   id			INTEGER PRIMARY KEY," // row index
 				+ "   item_name		VARCHAR(256) NOT NULL UNIQUE," // The items name
 				+ "   data          TEXT NOT NULL" // Binary data of this item
@@ -115,6 +125,96 @@ public class DatabaseConnection {
 				if (!results.isBeforeFirst()) return null; // no results
 				return results.getString("item_name");
 			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void deleteHoarderItemFromItemName(String name) { // returns null if no item
+		try {
+			PreparedStatement stmt = connection.prepareStatement(
+				"DELETE FROM hoarder_items WHERE item_name=?"
+			);
+			stmt.setString(1, name);
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/* *************************************
+	  Hoarder Prizes
+	**************************************** */
+
+	public void addItemToHoarderPrizes(ItemStack itemStack) {
+		try {
+			itemStack.setAmount(1);
+
+			PreparedStatement stmt = connection.prepareStatement(
+				"INSERT INTO hoarder_prizes (item_name, data) VALUES (?, ?)"
+			);
+			PlainTextComponentSerializer plainTextSerializer = PlainTextComponentSerializer.plainText();
+			String itemName = plainTextSerializer.serialize(Component.translatable(itemStack));
+
+			stmt.setString(1, itemName);
+			stmt.setBytes(2, itemStack.serializeAsBytes());
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public int getNumHoarderPrizes() { // returns null if no item
+		try {
+			PreparedStatement stmt = connection.prepareStatement(
+				"SELECT COUNT(1) FROM hoarder_prizes"
+			);
+			try (ResultSet results = stmt.executeQuery()) {
+				if (!results.isBeforeFirst()) return 0; // no results
+				return results.getInt(1);
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public ItemStack getHoarderPrizeAtIndex(int index) { // returns null if no item
+		try {
+			PreparedStatement stmt = connection.prepareStatement(
+				"SELECT data FROM hoarder_prizes WHERE id=?"
+			);
+			stmt.setInt(1, index+1);
+			try (ResultSet results = stmt.executeQuery()) {
+				if (!results.isBeforeFirst()) return null; // no results
+				return ItemStack.deserializeBytes(results.getBytes("data")); // serialise to b64 bytes
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public String getHoarderPrizeNameAtIndex(int index) { // returns null if no item
+		try {
+			PreparedStatement stmt = connection.prepareStatement(
+				"SELECT item_name FROM hoarder_prizes WHERE id=?"
+			);
+			stmt.setInt(1, index+1);
+			try (ResultSet results = stmt.executeQuery()) {
+				if (!results.isBeforeFirst()) return null; // no results
+				return results.getString("item_name");
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void deleteHoarderPrizeFromItemName(String name) { // returns null if no item
+		try {
+			PreparedStatement stmt = connection.prepareStatement(
+				"DELETE FROM hoarder_prizes WHERE item_name=?"
+			);
+			stmt.setString(1, name);
+			stmt.executeUpdate();
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
@@ -198,6 +298,52 @@ public class DatabaseConnection {
 			PreparedStatement stmt = connection.prepareStatement(
 				"UPDATE players SET items_fed_this_event=0"
 			);
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public List<ItemStack> getPrizesForPlayer(UUID uuid) { // returns null if no item
+		try {
+			PreparedStatement stmt = connection.prepareStatement(
+				"SELECT pending_prizes FROM players WHERE uuid=?"
+			);
+			stmt.setString(1, uuid.toString());
+			try (ResultSet results = stmt.executeQuery()) {
+				byte[] pendingPrizes = results.getBytes("pending_prizes");
+				if (pendingPrizes == null) {
+					return new ArrayList<>();
+				}
+				return new ArrayList<>(Arrays.asList(ItemStack.deserializeItemsFromBytes(pendingPrizes)));
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void addPrizeToPlayer(UUID uuid, ItemStack prize) { // returns null if no item
+		try {
+			List<ItemStack> curPrizes = getPrizesForPlayer(uuid);
+			curPrizes.add(prize);
+
+			PreparedStatement stmt = connection.prepareStatement(
+				"UPDATE players SET pending_prizes=? WHERE uuid=?"
+			);
+			stmt.setBytes(1, ItemStack.serializeItemsAsBytes(curPrizes));
+			stmt.setString(2, uuid.toString());
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void clearPlayerPrizes(UUID uuid) { // returns null if no item
+		try {
+			PreparedStatement stmt = connection.prepareStatement(
+				"UPDATE players SET pending_prizes=null WHERE uuid=?"
+			);
+			stmt.setString(1, uuid.toString());
 			stmt.executeUpdate();
 		} catch (SQLException e) {
 			throw new RuntimeException(e);

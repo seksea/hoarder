@@ -6,12 +6,15 @@ import me.sekc.hoarder.Hoarder;
 import me.sekc.hoarder.HoarderEventManager;
 import me.sekc.hoarder.MessageFormatter;
 import me.sekc.hoarder.gui.BaseMenu;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +45,21 @@ public class FeedMenu extends BaseMenu {
 
 			if (lItem.custom) // initialise
 				itemsInWindow.add(ItemStack.empty());
+
+			if (lItem.id != null) {
+				if (lItem.id.equals("hoarderitem")) {
+					HoarderEventManager.HoarderEvent currentEvent = HoarderEventManager.getCurrentEvent();
+					lItem.customItemStack = currentEvent.itemStack.clone();
+
+					PlainTextComponentSerializer plainTextSerializer = PlainTextComponentSerializer.plainText();
+					String itemName = plainTextSerializer.serialize(Component.translatable(lItem.customItemStack));
+
+					lItem.customItemStack.lore(MessageFormatter.getAndDeserialiseLines("gui.feed.current-hoarder-item-lore", Map.ofEntries(
+						Map.entry("%item_name%", itemName),
+						Map.entry("%pretty_time_remaining%", Duration.ofSeconds(currentEvent.endTime - (System.currentTimeMillis()/1000)).toString().substring(2).toLowerCase())
+					)));
+				}
+			}
 
 			gui.setItem(index, lItem.getItemStack());
 			index++;

@@ -3,8 +3,10 @@ package me.sekc.hoarder.gui;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import me.sekc.hoarder.Hoarder;
 import me.sekc.hoarder.Logger;
+import me.sekc.hoarder.MessageFormatter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -39,7 +41,7 @@ public class MenuManager {
 
 			playerToOpenGUIMap.put(player.getUniqueId(), menu);
 
-			Inventory gui = Bukkit.getServer().createInventory(player, 9*6, Component.text(menu.getTitle()).color(TextColor.color(255, 255, 255)));
+			Inventory gui = Bukkit.getServer().createInventory(player, 9*6, MiniMessage.miniMessage().deserialize(menu.getTitle()));
 
 			menu.fillContent(player, gui); // get the initial content of the menu
 

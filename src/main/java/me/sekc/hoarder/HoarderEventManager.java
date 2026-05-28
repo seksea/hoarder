@@ -101,6 +101,24 @@ public class HoarderEventManager {
 			Hoarder.broadcastIfEnabled(MessageFormatter.getAsChatMessageAndDeserialise("event.hoarder-ending-no-participants"));
 		} else {
 			Hoarder.broadcastIfEnabled(MessageFormatter.getAsChatMessageAndDeserialise("event.hoarder-ending"));
+
+			// Reward prizes
+			List<Integer> prizeConfig = (List<Integer>)ConfigurationManager.config.getList("event.prize-config");
+			int numPrizesInPrizeList = plugin.dbConn.getNumHoarderPrizes();
+			int curLeaderboardPlace = 0;
+			for (int numPrizes : prizeConfig) {
+				if (curLeaderboardPlace >= leaderboard.size()) continue;
+
+				DatabaseConnection.PlayerData playerToAward = leaderboard.get(curLeaderboardPlace);
+				for (int i = 0; i < numPrizes; i++) {
+					// select random prize
+					ItemStack item = plugin.dbConn.getHoarderPrizeAtIndex(ThreadLocalRandom.current().nextInt(0, numPrizesInPrizeList));
+					plugin.dbConn.addPrizeToPlayer(playerToAward.uuid, item);
+				}
+				curLeaderboardPlace++;
+			}
+
+			// Broadcast the leaderboard
 			for (int i = 0; i < Math.min(leaderboard.size(), 3); i++) {
 				Hoarder.broadcastIfEnabled(MessageFormatter.getAsChatMessageAndDeserialise("event.hoarder-ending-leaderboard-line", Map.ofEntries(
 					Map.entry("%leaderboard_place%", String.valueOf(i+1)),

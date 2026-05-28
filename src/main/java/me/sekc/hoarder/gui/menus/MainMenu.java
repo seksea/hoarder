@@ -24,6 +24,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -76,6 +77,22 @@ public class MainMenu extends BaseMenu {
 				), player.getUniqueId()));
 
 				gui.setItem(curIndex, lItem.getItemStack());
+			} else if (lItem != null && lItem.id.equals("prizes")) {
+				List<ItemStack> prizes = plugin.dbConn.getPrizesForPlayer(player.getUniqueId());
+
+				ItemStack itemStack = lItem.getItemStack();
+
+				if (!prizes.isEmpty()) {
+					// they have won a prize!
+					itemStack.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+					itemStack.addUnsafeEnchantment(Enchantment.INFINITY, 1);
+
+					itemStack.lore(MessageFormatter.getAndDeserialiseLines("gui.main-menu.prize-lore-won-prize", Map.ofEntries(
+						Map.entry("%num_prizes_won%", String.valueOf(prizes.size()))
+					)));
+				}
+
+				gui.setItem(curIndex, itemStack);
 			}
 			curIndex++;
 		}
@@ -93,6 +110,29 @@ public class MainMenu extends BaseMenu {
 			}
 			if (clickedItem.id.equals("leaderboard")) {
 				MenuManager.open(e.getWhoClicked(), new LeaderboardMenu(plugin, LeaderboardMenu.SortType.FED_THIS_EVENT));
+			}
+			if (clickedItem.id.equals("prizes")) {
+				List<ItemStack> prizes = plugin.dbConn.getPrizesForPlayer(e.getWhoClicked().getUniqueId());
+				if (!prizes.isEmpty()) {
+					int emptySlots = 0; // check player has space in inventory
+					for (ItemStack item : e.getWhoClicked().getInventory().getStorageContents()) {
+						if (item == null) {
+							emptySlots++;
+						}
+					}
+
+					if (emptySlots >= prizes.size()) {
+						for (ItemStack prize : prizes) {
+							e.getWhoClicked().getInventory().addItem(prize);
+						}
+						e.getWhoClicked().sendMessage(MessageFormatter.getAsChatMessageAndDeserialise("gui.main-menu.collected-prize"));
+
+						plugin.dbConn.clearPlayerPrizes(e.getWhoClicked().getUniqueId());
+					} else {
+						e.getWhoClicked().sendMessage(MessageFormatter.getAsChatMessageAndDeserialise("gui.main-menu.could-not-collect-prize"));
+					}
+
+				}
 			}
 		}
 	}

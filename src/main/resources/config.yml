@@ -25,3 +25,10 @@ event:
   # - 86400  = 1 day
   # - 3600   = 1 hour
   event-length-seconds: 600
+
+  # Controls how many prizes different positions on the leaderboard will earn,
+  # so with the default config ( [3,2,1] ), it would give this result:
+  #  - 1st place = 3 prizes
+  #  - 2nd place = 2 prizes
+  #  - 3rd place = 1 prizes
+  prize-config: [3,2,1]

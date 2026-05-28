@@ -1,8 +1,4 @@
-# The title contains these funky characters as the custom resource pack defines them as pngs,
-# change this to a normal title if you are not using a custom resource pack.
-#   = backspace (move text cursor backwards)
-#   = blank dark gui png
-title: ""
+title: "<yellow>Hoarder</yellow> | Main Menu"
 
 # The layout of the UI
 #  a-Z = custom items that you can customise below (cannot be taken)
@@ -35,7 +31,7 @@ items:
     id: "prizes"
     material: GOLDEN_CARROT
     name: "<white>Prizes</white>"
-    lore: "<grey>Collect prizes won from previous hoarder events.</grey>"
+    lore: "<grey>Collect prizes won from previous hoarder events.</grey>" # uses "gui.main-menu.prize-lore-won-prize" when a prize has been won
   S:
     id: "playerstats"
     material: PLAYER_HEAD
