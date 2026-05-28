@@ -27,3 +27,8 @@ gui:
       <grey>Total items fed: <green>%total_items_fed%</green></grey>
   feed:
     fed: "<grey>You fed the <yellow>hoarder</yellow> %items_fed% items.</grey>"
+  leaderboard:
+    player-title: "<grey>%place%. <white>%player_name%</white></grey>"
+    player-lore: |
+      <grey>Items fed this event: <green>%items_fed_this_event%</green></grey>
+      <grey>Total items fed: <green>%total_items_fed%</green></grey>

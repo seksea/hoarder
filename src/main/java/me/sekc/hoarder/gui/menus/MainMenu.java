@@ -91,6 +91,9 @@ public class MainMenu extends BaseMenu {
 				if (currentEvent != null)
 					MenuManager.open(e.getWhoClicked(), new FeedMenu(plugin));
 			}
+			if (clickedItem.id.equals("leaderboard")) {
+				MenuManager.open(e.getWhoClicked(), new LeaderboardMenu(plugin, LeaderboardMenu.SortType.FED_THIS_EVENT));
+			}
 		}
 	}
 }

@@ -40,7 +40,7 @@ public class FeedMenu extends BaseMenu {
 				continue;
 			}
 
-			if (lItem.custom) // initialise itemsInFurnace
+			if (lItem.custom) // initialise
 				itemsInWindow.add(ItemStack.empty());
 
 			gui.setItem(index, lItem.getItemStack());
@@ -77,6 +77,7 @@ public class FeedMenu extends BaseMenu {
 						numItemsfed += item.getAmount();
 						e.getInventory().setItem(customSlotIDToSlotID(index), ItemStack.empty());
 					}
+					// clear itemsInWindow with air
 					itemsInWindow.set(customSlotIDToSlotID(index), ItemStack.empty());
 					index++;
 				}
