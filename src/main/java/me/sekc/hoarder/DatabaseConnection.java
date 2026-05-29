@@ -49,17 +49,17 @@ public class DatabaseConnection {
 
 		connection.createStatement().executeUpdate(
 			"CREATE TABLE IF NOT EXISTS hoarder_items ("
-				+ "   id			INTEGER PRIMARY KEY," // row index
-				+ "   item_name		VARCHAR(256) NOT NULL UNIQUE," // The items name
-				+ "   data          TEXT NOT NULL" // Binary data of this item
+				+ "   item_name		VARCHAR(256) NOT NULL PRIMARY KEY," // The items name
+				+ "   data          TEXT NOT NULL," // Binary data of this item
+				+ "   deleted       BOOL NOT NULL DEFAULT FALSE"
 				+ ")"
 		);
 
 		connection.createStatement().executeUpdate(
 			"CREATE TABLE IF NOT EXISTS hoarder_prizes ("
-				+ "   id			INTEGER PRIMARY KEY," // row index
 				+ "   item_name		VARCHAR(256) NOT NULL UNIQUE," // The items name
-				+ "   data          TEXT NOT NULL" // Binary data of this item
+				+ "   data          TEXT NOT NULL," // Binary data of this item
+				+ "   deleted       BOOL NOT NULL DEFAULT FALSE"
 				+ ")"
 		);
 	}
@@ -69,20 +69,34 @@ public class DatabaseConnection {
 	**************************************** */
 
 	public void addItemToHoarderItems(ItemStack itemStack) {
+		itemStack.setAmount(1);
+
+		PlainTextComponentSerializer plainTextSerializer = PlainTextComponentSerializer.plainText();
+		String itemName = plainTextSerializer.serialize(Component.translatable(itemStack));
+
 		try {
-			itemStack.setAmount(1);
 
 			PreparedStatement stmt = connection.prepareStatement(
 				"INSERT INTO hoarder_items (item_name, data) VALUES (?, ?)"
 			);
-			PlainTextComponentSerializer plainTextSerializer = PlainTextComponentSerializer.plainText();
-			String itemName = plainTextSerializer.serialize(Component.translatable(itemStack));
-
 			stmt.setString(1, itemName);
 			stmt.setBytes(2, itemStack.serializeAsBytes());
 			stmt.executeUpdate();
 		} catch (SQLException e) {
-			throw new RuntimeException(e);
+			try {
+				if (e.getErrorCode() == 19) { // UNIQUE (means already exists, undelete or update this item)
+					PreparedStatement stmt = connection.prepareStatement(
+						"UPDATE hoarder_items SET data=?, deleted=false WHERE item_name=?"
+					);
+					stmt.setBytes(1, itemStack.serializeAsBytes()); // make sure to set the data incase it changed
+					stmt.setString(2, itemName);
+					stmt.executeUpdate();
+				} else {
+					throw  new RuntimeException(e);
+				}
+			} catch (SQLException ee) {
+				throw new RuntimeException(ee);
+			}
 		}
 	}
 
@@ -103,7 +117,7 @@ public class DatabaseConnection {
 	public ItemStack getHoarderItemAtIndex(int index) { // returns null if no item
 		try {
 			PreparedStatement stmt = connection.prepareStatement(
-				"SELECT data FROM hoarder_items WHERE id=?"
+				"SELECT data FROM hoarder_items WHERE rowid=? AND deleted=false"
 			);
 			stmt.setInt(1, index+1);
 			try (ResultSet results = stmt.executeQuery()) {
@@ -118,7 +132,7 @@ public class DatabaseConnection {
 	public String getHoarderItemNameAtIndex(int index) { // returns null if no item
 		try {
 			PreparedStatement stmt = connection.prepareStatement(
-				"SELECT item_name FROM hoarder_items WHERE id=?"
+				"SELECT item_name FROM hoarder_items WHERE rowid=? AND deleted=false"
 			);
 			stmt.setInt(1, index+1);
 			try (ResultSet results = stmt.executeQuery()) {
@@ -133,7 +147,7 @@ public class DatabaseConnection {
 	public void deleteHoarderItemFromItemName(String name) { // returns null if no item
 		try {
 			PreparedStatement stmt = connection.prepareStatement(
-				"DELETE FROM hoarder_items WHERE item_name=?"
+				"UPDATE hoarder_items SET deleted=true WHERE item_name=?"
 			);
 			stmt.setString(1, name);
 			stmt.executeUpdate();
@@ -147,20 +161,34 @@ public class DatabaseConnection {
 	**************************************** */
 
 	public void addItemToHoarderPrizes(ItemStack itemStack) {
-		try {
-			itemStack.setAmount(1);
+		itemStack.setAmount(1);
 
+		PlainTextComponentSerializer plainTextSerializer = PlainTextComponentSerializer.plainText();
+		String itemName = plainTextSerializer.serialize(Component.translatable(itemStack));
+
+		try {
 			PreparedStatement stmt = connection.prepareStatement(
 				"INSERT INTO hoarder_prizes (item_name, data) VALUES (?, ?)"
 			);
-			PlainTextComponentSerializer plainTextSerializer = PlainTextComponentSerializer.plainText();
-			String itemName = plainTextSerializer.serialize(Component.translatable(itemStack));
 
 			stmt.setString(1, itemName);
 			stmt.setBytes(2, itemStack.serializeAsBytes());
 			stmt.executeUpdate();
 		} catch (SQLException e) {
-			throw new RuntimeException(e);
+			try {
+				if (e.getErrorCode() == 19) { // UNIQUE (means already exists, undelete or update this item)
+					PreparedStatement stmt = connection.prepareStatement(
+						"UPDATE hoarder_items SET data=?, deleted=false WHERE item_name=?"
+					);
+					stmt.setBytes(1, itemStack.serializeAsBytes()); // make sure to set the data incase it changed
+					stmt.setString(2, itemName);
+					stmt.executeUpdate();
+				} else {
+					throw  new RuntimeException(e);
+				}
+			} catch (SQLException ee) {
+				throw new RuntimeException(ee);
+			}
 		}
 	}
 
@@ -181,7 +209,7 @@ public class DatabaseConnection {
 	public ItemStack getHoarderPrizeAtIndex(int index) { // returns null if no item
 		try {
 			PreparedStatement stmt = connection.prepareStatement(
-				"SELECT data FROM hoarder_prizes WHERE id=?"
+				"SELECT data FROM hoarder_prizes WHERE rowid=? AND deleted=false"
 			);
 			stmt.setInt(1, index+1);
 			try (ResultSet results = stmt.executeQuery()) {
@@ -196,7 +224,7 @@ public class DatabaseConnection {
 	public String getHoarderPrizeNameAtIndex(int index) { // returns null if no item
 		try {
 			PreparedStatement stmt = connection.prepareStatement(
-				"SELECT item_name FROM hoarder_prizes WHERE id=?"
+				"SELECT item_name FROM hoarder_prizes WHERE rowid=? AND deleted=false"
 			);
 			stmt.setInt(1, index+1);
 			try (ResultSet results = stmt.executeQuery()) {
@@ -211,7 +239,7 @@ public class DatabaseConnection {
 	public void deleteHoarderPrizeFromItemName(String name) { // returns null if no item
 		try {
 			PreparedStatement stmt = connection.prepareStatement(
-				"DELETE FROM hoarder_prizes WHERE item_name=?"
+				"UPDATE hoarder_prizes SET deleted=true WHERE item_name=?"
 			);
 			stmt.setString(1, name);
 			stmt.executeUpdate();

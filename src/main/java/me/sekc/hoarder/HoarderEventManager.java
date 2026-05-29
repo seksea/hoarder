@@ -71,7 +71,12 @@ public class HoarderEventManager {
 	static public HoarderEvent startRandomHoarderEvent() {
 		Hoarder plugin = Hoarder.getPlugin(Hoarder.class);
 		int numItems = plugin.dbConn.getNumHoarderItems();
-		ItemStack item = plugin.dbConn.getHoarderItemAtIndex(ThreadLocalRandom.current().nextInt(0, numItems));
+
+
+		ItemStack item = null;
+		while (item == null) { // keep picking until we find an item that isn't deleted
+			item = plugin.dbConn.getHoarderItemAtIndex(ThreadLocalRandom.current().nextInt(0, numItems));
+		}
 
 		long curSeconds = System.currentTimeMillis() / 1000;
 		startNewHoarderEvent(new HoarderEvent(item, curSeconds + ConfigurationManager.getLong("event.event-length-seconds")), true);
@@ -112,7 +117,10 @@ public class HoarderEventManager {
 				DatabaseConnection.PlayerData playerToAward = leaderboard.get(curLeaderboardPlace);
 				for (int i = 0; i < numPrizes; i++) {
 					// select random prize
-					ItemStack item = plugin.dbConn.getHoarderPrizeAtIndex(ThreadLocalRandom.current().nextInt(0, numPrizesInPrizeList));
+					ItemStack item = null;
+					while (item == null) { // keep picking until we find a prize that isnt deleted
+						item = plugin.dbConn.getHoarderPrizeAtIndex(ThreadLocalRandom.current().nextInt(0, numPrizesInPrizeList));
+					}
 					plugin.dbConn.addPrizeToPlayer(playerToAward.uuid, item);
 				}
 				curLeaderboardPlace++;

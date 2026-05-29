@@ -65,6 +65,7 @@ public class AdminCommand extends BaseCommand {
 
 						for (int index=0; index < plugin.dbConn.getNumHoarderItems(); index++) {
 							String itemName = plugin.dbConn.getHoarderItemNameAtIndex(index);
+							if (itemName == null) continue;
 
 							ctx.getSource().getExecutor().sendMessage(
 								MessageFormatter.getAsChatMessageAndDeserialise("admin.itemlist.list-item", Map.ofEntries(
