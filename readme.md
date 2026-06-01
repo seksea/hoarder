@@ -9,7 +9,7 @@ Bukkit plugin that picks a random item each day, and players have to feed this i
 
 This plugin would make a good addition to any survival or SMP server, adding a bit of competition and gives players a reason to come back each day to a new item to try and collect as much as they can.
 
-This plugin was originally created for the MC Exotic Minecraft server, and you can see it in action on `mcx.life`
+This plugin was originally created for the MC Exotic Minecraft server, and you can see it in action on [mcx.life](https://www.mcx.life)
 
 ## Features
 - Data is stored in SQLite database
