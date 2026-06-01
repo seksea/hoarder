@@ -15,6 +15,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -93,6 +94,33 @@ public class MainMenu extends BaseMenu {
 				}
 
 				gui.setItem(curIndex, itemStack);
+			} else if (lItem != null && lItem.id.startsWith("leaderboard_")) {
+				int leaderboard_place = Integer.valueOf(lItem.id.split("_")[1]) - 1;
+
+				// only contains one player because limit 1
+				List<DatabaseConnection.PlayerData> leaderboard = plugin.dbConn.getLeaderboardFromPlayerColumn("items_fed_this_event", leaderboard_place, 1);
+
+				if (!leaderboard.isEmpty()) {
+					DatabaseConnection.PlayerData playerData = leaderboard.getFirst();
+					lItem.customItemStack = ItemStack.of(Material.PLAYER_HEAD);
+
+					SkullMeta meta = (SkullMeta) lItem.customItemStack.getItemMeta();
+					OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerData.uuid);
+					meta.setOwningPlayer(offlinePlayer);
+					meta.customName(MessageFormatter.getAndDeserialise("gui.leaderboard.player-title", Map.ofEntries(
+						Map.entry("%place%", String.valueOf(leaderboard_place+1)),
+						Map.entry("%player_name%", offlinePlayer.getName())
+					), null));
+
+					lItem.customItemStack.setItemMeta(meta);
+
+					lItem.customItemStack.lore(MessageFormatter.getAndDeserialiseLines("gui.leaderboard.player-lore", Map.ofEntries(
+						Map.entry("%items_fed_this_event%", String.valueOf(playerData.itemsFedThisEvent)),
+						Map.entry("%total_items_fed%", String.valueOf(playerData.itemsFedTotal))
+					), player.getUniqueId()));
+
+					gui.setItem(curIndex, lItem.getItemStack());
+				}
 			}
 			curIndex++;
 		}
@@ -128,6 +156,8 @@ public class MainMenu extends BaseMenu {
 						e.getWhoClicked().sendMessage(MessageFormatter.getAsChatMessageAndDeserialise("gui.main-menu.collected-prize"));
 
 						plugin.dbConn.clearPlayerPrizes(e.getWhoClicked().getUniqueId());
+
+						MenuManager.open(e.getWhoClicked(), new MainMenu(plugin)); // re-open main menu to refresh
 					} else {
 						e.getWhoClicked().sendMessage(MessageFormatter.getAsChatMessageAndDeserialise("gui.main-menu.could-not-collect-prize"));
 					}

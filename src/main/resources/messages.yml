@@ -2,7 +2,7 @@ chat-prefix: "<grey>[<yellow>hoarder</yellow>] </grey>" # Space needs to be befo
 
 event:
   # Hoarder start & end messages that are broadcasted to all players (when config.yml allow-broadcast=true)
-  hoarder-starting: "<grey>The <yellow>Hoarder</yellow> hungers for <green>%item_name%</green>! You have 24 hours...</grey>"
+  hoarder-starting: "<grey>The <yellow>Hoarder</yellow> hungers for <green>%item_name%</green>! You have %pretty_time_remaining%...</grey>"
   hoarder-ending-no-participants: "<grey>The <yellow>Hoarder</yellow> has ended! Unfortunately no-one participated :(</grey>"
   hoarder-ending: "<grey>The <yellow>Hoarder</yellow> has ended! Top 3 will be awarded:"
   hoarder-ending-leaderboard-line: "<grey>%leaderboard_place%. <white>%player_name%</white> (<green>%num_items_fed%</green>)</grey>"

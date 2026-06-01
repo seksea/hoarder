@@ -41,7 +41,7 @@ public class MenuManager {
 
 			playerToOpenGUIMap.put(player.getUniqueId(), menu);
 
-			Inventory gui = Bukkit.getServer().createInventory(player, 9*6, MiniMessage.miniMessage().deserialize(menu.getTitle()));
+			Inventory gui = Bukkit.getServer().createInventory(player, 9*menu.rows, MiniMessage.miniMessage().deserialize(menu.getTitle()));
 
 			menu.fillContent(player, gui); // get the initial content of the menu
 
@@ -86,7 +86,10 @@ public class MenuManager {
 				return; // Let the player click around their own inventory
 
 			if (e.getClickedInventory().getType().equals(InventoryType.PLAYER)) {
-				if (e.isShiftClick()) e.setCancelled(true); // don't allow shift clicks in inventory
+				if (e.isShiftClick()) {
+					e.setCancelled(true); // don't allow shift clicks in inventory by default
+					openGUI.itemShiftClickedFromInventory(e);
+				}
 				return; // Don't send clicks in own inventory to GUIs
 			}
 

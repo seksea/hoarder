@@ -29,6 +29,8 @@ public class BaseMenu {
 	public YamlConfiguration menuConfiguration; // this is set by the MenuManager
 	protected int numCustomSlots = 0;
 
+	public int rows = 6; // how many rows high should the gui be
+
 	protected class LayoutItem { // an item that has been parsed from a yaml file
 		public Material material;
 		public String id;
@@ -102,6 +104,9 @@ public class BaseMenu {
 		}
 
 		this.menuConfiguration = configuration;
+		int configRows = configuration.getInt("rows");
+		if (configRows != 0)
+			this.rows = configRows;
 		return configuration;
 	}
 
@@ -158,6 +163,11 @@ public class BaseMenu {
 		}
 	}
 
+	protected void shiftClickInv(ItemStack clickedItem, InventoryClickEvent e) {
+		// Override me!
+
+	}
+
 	public void handleClose(InventoryCloseEvent e) {
 		// Override me!
 	}
@@ -173,6 +183,18 @@ public class BaseMenu {
 
 		if (item != null) {
 			layoutItemClicked(item, e);
+		}
+	}
+
+	public void itemShiftClickedFromInventory(InventoryClickEvent e) {
+		e.setCancelled(true); // always cancel by default
+
+		if (e.getSlot() < 0) {
+			return; // clicking outside the inventory is slot -999
+		}
+
+		if (e.getCurrentItem() != null) {
+			shiftClickInv(e.getCurrentItem(), e);
 		}
 	}
 
@@ -229,7 +251,8 @@ public class BaseMenu {
 
 			// Handle inventory
 			if (e.isShiftClick()) {
-				e.setCancelled(true); // don't allow any shift clicks
+				e.setCancelled(false); // allow shift clicking out of inventory
+				setItemInStorageRunnable.set(ItemStack.empty(), customSlotId);
 			} else if (customSlotId != -1) {
 				if (clickedItemStack == null || clickedItemStack.isEmpty()) {
 					if (!cursor.isEmpty()) {
@@ -252,12 +275,12 @@ public class BaseMenu {
 
 						if (newItemStack.isSimilar(clickedItemStack)) {
 							if (e.isRightClick()) {
-								int newAmount = Math.clamp(clickedItemStack.getAmount()+1, 1, newItemStack.getMaxStackSize());
+								int newAmount = Math.clamp(clickedItemStack.getAmount() + 1, 1, newItemStack.getMaxStackSize());
 								newItemStack.setAmount(newAmount); // if right click and is same item then add 1
 								e.setCancelled(false);
 							}
 							if (e.isLeftClick()) {
-								int newAmount = Math.clamp(clickedItemStack.getAmount()+newItemStack.getAmount(), 1, newItemStack.getMaxStackSize());
+								int newAmount = Math.clamp(clickedItemStack.getAmount() + newItemStack.getAmount(), 1, newItemStack.getMaxStackSize());
 								newItemStack.setAmount(newAmount); // if left click and is same item then add all that we can
 								e.setCancelled(false);
 							}
@@ -272,7 +295,7 @@ public class BaseMenu {
 						} else if (e.isRightClick()) {
 							// grab half of the item
 							ItemStack newItemStack = clickedItemStack.clone();
-							newItemStack.setAmount(newItemStack.getAmount()/2);
+							newItemStack.setAmount(newItemStack.getAmount() / 2);
 							e.setCancelled(false);
 							setItemInStorageRunnable.set(newItemStack, customSlotId);
 						}

@@ -5,16 +5,39 @@ title: "<yellow>Hoarder</yellow> | Main Menu"
 #  . = empty space that are completely locked, cannot have items dragged in
 #  _ = custom area, this is used for things such as the feed menu, lets the menu decide how to handle this area
 layout: |
-  . . . . . . . . .
-  . . . . . . . . .
+  . . 1 . 2 . 3 . .
   . . . . . . . . .
   . . . . H . . . .
   . . L . . . P . .
   . . . . S . . . .
 
+# use this in any gui to resize it
+rows: 5
+
 # Define the items to fill the layout with, the only thing that matters here is the "id", as that controls what
 # the button does, so don't change that, everything else is cosmetic and can be customised.
 items:
+  1:
+    id: "leaderboard_1"
+    material: BARRIER
+    name: "1. No Player"
+    lore: |
+      <grey>There is no-one currently in 1st place.</grey>
+      <grey><dark_red><b><u>FEED</u></b></dark_red> the hoarder to instantly be on the leaderboard!
+  2:
+    id: "leaderboard_2"
+    material: BARRIER
+    name: "2. No Player"
+    lore: |
+      <grey>There is no-one currently in 2nd place.</grey>
+      <grey><dark_red><b><u>FEED</u></b></dark_red> the hoarder to instantly be on the leaderboard!
+  3:
+    id: "leaderboard_3"
+    material: BARRIER
+    name: "3. No Player"
+    lore: |
+      <grey>There is no-one currently in 3rd place.</grey>
+      <grey><dark_red><b><u>FEED</u></b></dark_red> the hoarder to instantly be on the leaderboard!
   H:
     id: "hoarder"
     material: BARRIER

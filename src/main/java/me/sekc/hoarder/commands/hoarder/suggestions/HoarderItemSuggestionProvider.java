@@ -6,6 +6,7 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import me.sekc.hoarder.DatabaseConnection;
 import me.sekc.hoarder.Hoarder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -26,10 +27,10 @@ public class HoarderItemSuggestionProvider implements SuggestionProvider<Command
         CommandSourceStack source = context.getSource();
 
 		for (int index=0; index < plugin.dbConn.getNumHoarderItems(); index++) {
-			ItemStack item = plugin.dbConn.getHoarderItemAtIndex(index);
+			DatabaseConnection.HoarderItem item = plugin.dbConn.getHoarderItemAtIndex(index);
 
 			PlainTextComponentSerializer plainTextSerializer = PlainTextComponentSerializer.plainText();
-			String itemName = plainTextSerializer.serialize(Component.translatable(item));
+			String itemName = plainTextSerializer.serialize(Component.translatable(item.stack));
 
 			builder.suggest(itemName);
 		}

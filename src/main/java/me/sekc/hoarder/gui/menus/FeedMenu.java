@@ -8,11 +8,15 @@ import me.sekc.hoarder.MessageFormatter;
 import me.sekc.hoarder.gui.BaseMenu;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -100,10 +104,23 @@ public class FeedMenu extends BaseMenu {
 					index++;
 				}
 
+				// add to db
 				DatabaseConnection.PlayerData playerData = plugin.dbConn.getPlayerFromDatabase(e.getWhoClicked().getUniqueId());
 				playerData.itemsFedTotal += numItemsfed;
 				playerData.itemsFedThisEvent += numItemsfed;
 				plugin.dbConn.updatePlayerInDatabase(e.getWhoClicked().getUniqueId(), playerData);
+
+				// award money
+				if (Bukkit.getServer().getPluginManager().getPlugin("Vault") != null) {
+					RegisteredServiceProvider<Economy> rsp = Bukkit.getServer().getServicesManager().getRegistration(Economy.class);
+					if (rsp != null) {
+						Economy econ = rsp.getProvider();
+						if (econ != null) {
+							HoarderEventManager.HoarderEvent currentEvent = HoarderEventManager.getCurrentEvent();
+							econ.depositPlayer(Bukkit.getOfflinePlayer(e.getWhoClicked().getUniqueId()), currentEvent.awardMoney * numItemsfed);
+						}
+					}
+				}
 
 				e.getWhoClicked().sendMessage(
 					MessageFormatter.getAsChatMessageAndDeserialise("gui.feed.fed", Map.ofEntries(
@@ -112,6 +129,48 @@ public class FeedMenu extends BaseMenu {
 				);
 			}
 		}
+	}
+
+	@Override
+	protected void shiftClickInv(ItemStack clickedItem, InventoryClickEvent e) {
+		super.shiftClickInv(clickedItem, e);
+
+		HoarderEventManager.HoarderEvent event = HoarderEventManager.getCurrentEvent();
+
+		if (event == null || !event.itemStack.isSimilar(clickedItem)) {
+			// not in list, cancel and do nothing
+			e.setCancelled(true);
+			return;
+		}
+
+
+		ItemStack clonedItem = clickedItem.clone();
+
+		// get the first available slot
+		int firstEmptySpaceIndex = -1;
+		int idx = 0;
+		for (ItemStack item : itemsInWindow) {
+			if (item.isEmpty()) {
+				itemsInWindow.set(idx, clonedItem);
+				e.getInventory().setItem(idx, clonedItem);
+				e.setCurrentItem(ItemStack.empty());
+				return;
+			}
+			if (item.isSimilar(clickedItem) && item.getAmount() < item.getMaxStackSize()) {
+				int amountWantToTransfer = clonedItem.getAmount();
+				int amountCanTransfer = item.getMaxStackSize() - item.getAmount();
+				int amountToTransfer = Math.min(amountWantToTransfer, amountCanTransfer);
+
+
+				item.setAmount(item.getAmount() + amountToTransfer);
+				itemsInWindow.set(idx, item);
+				e.getInventory().setItem(idx, item);
+				clonedItem.setAmount(clonedItem.getAmount() - amountToTransfer);
+			}
+			idx++;
+		}
+
+		e.setCurrentItem(clickedItem);
 	}
 
 	@Override

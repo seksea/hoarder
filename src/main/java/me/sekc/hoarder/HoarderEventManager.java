@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -19,10 +20,12 @@ public class HoarderEventManager {
 		public ItemStack itemStack; // The item the hoarder wants (uses .isSimilar) to compare
 
 		public long endTime; // When the event will end (unix epoch seconds)
+		public float awardMoney; // how much money should we award per item fed to the hoarder?
 
-		public HoarderEvent(ItemStack itemStack, long endTime) {
+		public HoarderEvent(ItemStack itemStack, long endTime, float awardMoney) {
 			this.itemStack = itemStack;
 			this.endTime = endTime;
+			this.awardMoney = awardMoney;
 		}
 	}
 	static HoarderEvent currentEvent = null; // null = no event
@@ -62,7 +65,8 @@ public class HoarderEventManager {
 		PlainTextComponentSerializer plainTextSerializer = PlainTextComponentSerializer.plainText();
 		String itemName = plainTextSerializer.serialize(Component.translatable(currentEvent.itemStack));
 		Hoarder.broadcastIfEnabled(MessageFormatter.getAsChatMessageAndDeserialise("event.hoarder-starting", Map.ofEntries(
-			Map.entry("%item_name%", itemName)
+			Map.entry("%item_name%", itemName),
+			Map.entry("%pretty_time_remaining%", Duration.ofSeconds(currentEvent.endTime - (System.currentTimeMillis()/1000)).toString().substring(2).toLowerCase())
 		), null));
 
 		MenuManager.closeAllGUIs(); // cheap refresh hack
@@ -73,13 +77,13 @@ public class HoarderEventManager {
 		int numItems = plugin.dbConn.getNumHoarderItems();
 
 
-		ItemStack item = null;
+		DatabaseConnection.HoarderItem item = null;
 		while (item == null) { // keep picking until we find an item that isn't deleted
 			item = plugin.dbConn.getHoarderItemAtIndex(ThreadLocalRandom.current().nextInt(0, numItems));
 		}
 
 		long curSeconds = System.currentTimeMillis() / 1000;
-		startNewHoarderEvent(new HoarderEvent(item, curSeconds + ConfigurationManager.getLong("event.event-length-seconds")), true);
+		startNewHoarderEvent(new HoarderEvent(item.stack, curSeconds + ConfigurationManager.getLong("event.event-length-seconds"), item.awardMoney), true);
 
 		return currentEvent;
 	}
@@ -90,8 +94,6 @@ public class HoarderEventManager {
 		}
 
 		Hoarder plugin = Hoarder.getPlugin(Hoarder.class);
-
-		// Give top 3 players rewards TODO
 
 		// clear event
 		currentEvent = null;
@@ -112,6 +114,10 @@ public class HoarderEventManager {
 			int numPrizesInPrizeList = plugin.dbConn.getNumHoarderPrizes();
 			int curLeaderboardPlace = 0;
 			for (int numPrizes : prizeConfig) {
+				if (numPrizesInPrizeList == 0) {
+					Logger.warn("No prizes in the prize list! no players will receive a prize");
+					break;
+				}
 				if (curLeaderboardPlace >= leaderboard.size()) continue;
 
 				DatabaseConnection.PlayerData playerToAward = leaderboard.get(curLeaderboardPlace);

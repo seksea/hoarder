@@ -34,6 +34,7 @@ public class DatabaseConnection {
 				+ "	  id 			  INTEGER PRIMARY KEY CHECK (id = 1)," // enforces only one row
 				+ "   item_name		  VARCHAR(256)," // The items' name
 				+ "   data  		  VARCHAR(256),"
+				+ "   award_money   FLOAT NOT NULL DEFAULT 0,"
 				+ "   end_time        INTEGER(64)" // unix timestamp
 				+ ")"
 		);
@@ -51,6 +52,7 @@ public class DatabaseConnection {
 			"CREATE TABLE IF NOT EXISTS hoarder_items ("
 				+ "   item_name		VARCHAR(256) NOT NULL PRIMARY KEY," // The items name
 				+ "   data          TEXT NOT NULL," // Binary data of this item
+				+ "   award_money   FLOAT NOT NULL DEFAULT 0,"
 				+ "   deleted       BOOL NOT NULL DEFAULT FALSE"
 				+ ")"
 		);
@@ -68,7 +70,7 @@ public class DatabaseConnection {
 	  Hoarder Items (items the hoarder wants)
 	**************************************** */
 
-	public void addItemToHoarderItems(ItemStack itemStack) {
+	public void addItemToHoarderItems(ItemStack itemStack, float awardMoney) {
 		itemStack.setAmount(1);
 
 		PlainTextComponentSerializer plainTextSerializer = PlainTextComponentSerializer.plainText();
@@ -77,10 +79,11 @@ public class DatabaseConnection {
 		try {
 
 			PreparedStatement stmt = connection.prepareStatement(
-				"INSERT INTO hoarder_items (item_name, data) VALUES (?, ?)"
+				"INSERT INTO hoarder_items (item_name, data, award_money) VALUES (?, ?, ?)"
 			);
 			stmt.setString(1, itemName);
 			stmt.setBytes(2, itemStack.serializeAsBytes());
+			stmt.setFloat(3, awardMoney);
 			stmt.executeUpdate();
 		} catch (SQLException e) {
 			try {
@@ -114,15 +117,24 @@ public class DatabaseConnection {
 		}
 	}
 
-	public ItemStack getHoarderItemAtIndex(int index) { // returns null if no item
+	public static class HoarderItem {
+		public ItemStack stack;
+		public float awardMoney;
+
+		HoarderItem(ItemStack stack, float awardMoney) {
+			this.stack = stack;
+			this.awardMoney = awardMoney;
+		}
+	}
+	public HoarderItem getHoarderItemAtIndex(int index) { // returns null if no item
 		try {
 			PreparedStatement stmt = connection.prepareStatement(
-				"SELECT data FROM hoarder_items WHERE rowid=? AND deleted=false"
+				"SELECT data, award_money FROM hoarder_items WHERE rowid=? AND deleted=false"
 			);
 			stmt.setInt(1, index+1);
 			try (ResultSet results = stmt.executeQuery()) {
 				if (!results.isBeforeFirst()) return null; // no results
-				return ItemStack.deserializeBytes(results.getBytes("data")); // serialise to b64 bytes
+				return new HoarderItem(ItemStack.deserializeBytes(results.getBytes("data")), results.getFloat("award_money")); // serialise to b64 bytes
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
@@ -178,7 +190,7 @@ public class DatabaseConnection {
 			try {
 				if (e.getErrorCode() == 19) { // UNIQUE (means already exists, undelete or update this item)
 					PreparedStatement stmt = connection.prepareStatement(
-						"UPDATE hoarder_items SET data=?, deleted=false WHERE item_name=?"
+						"UPDATE hoarder_prizes SET data=?, deleted=false WHERE item_name=?"
 					);
 					stmt.setBytes(1, itemStack.serializeAsBytes()); // make sure to set the data incase it changed
 					stmt.setString(2, itemName);
@@ -416,7 +428,7 @@ public class DatabaseConnection {
 		// you can use the HoarderEventManager instead to get the current event from memory
 		try {
 			PreparedStatement stmt = connection.prepareStatement(
-				"SELECT item_name, data, end_time FROM current_event"
+				"SELECT item_name, data, award_money, end_time FROM current_event"
 			);
 			try (ResultSet results = stmt.executeQuery()) {
 				if (!results.isBeforeFirst()) // false if empty
@@ -424,7 +436,8 @@ public class DatabaseConnection {
 
 				return new HoarderEventManager.HoarderEvent(
 					ItemStack.deserializeBytes(results.getBytes("data")),
-					results.getLong("end_time")
+					results.getLong("end_time"),
+					results.getFloat("award_money")
 				);
 			}
 		} catch (SQLException e) {
@@ -455,7 +468,7 @@ public class DatabaseConnection {
 			HoarderEventManager.HoarderEvent oldEvent = getCurrentHoarderEvent();
 
 			PreparedStatement stmt = connection.prepareStatement(
-				"INSERT INTO current_event (item_name, data, end_time) VALUES (?, ?, ?)"
+				"INSERT INTO current_event (item_name, data, end_time, award_money) VALUES (?, ?, ?, ?)"
 			);
 
 			PlainTextComponentSerializer plainTextSerializer = PlainTextComponentSerializer.plainText();
@@ -464,6 +477,7 @@ public class DatabaseConnection {
 			stmt.setString(1, itemName);
 			stmt.setBytes(2, event.itemStack.serializeAsBytes());
 			stmt.setLong(3, event.endTime);
+			stmt.setFloat(4, event.awardMoney);
 			stmt.executeUpdate();
 		} catch (SQLException e) {
 			throw new RuntimeException(e);

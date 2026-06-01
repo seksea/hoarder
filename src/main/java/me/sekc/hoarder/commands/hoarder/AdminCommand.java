@@ -2,6 +2,7 @@ package me.sekc.hoarder.commands.hoarder;
 
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -29,29 +30,33 @@ public class AdminCommand extends BaseCommand {
 		root.then(Commands.literal("admin")
 			.then(Commands.literal("itemlist")
 				.then(Commands.literal("addfromhand")
-					.executes(ctx -> {
-						UUID playerUUID = ctx.getSource().getExecutor().getUniqueId();
-						ItemStack itemInHand = ((Player)ctx.getSource().getExecutor()).getInventory().getItemInMainHand().clone();
+					.then(Commands.argument("award_money", FloatArgumentType.floatArg(0))
+						.executes(ctx -> {
+							float awardMoney = ctx.getArgument("award_money", Float.class);
 
-						if (itemInHand.isEmpty()) {
-							throw new RuntimeException("You need to have something in your main hand.");
-						}
+							UUID playerUUID = ctx.getSource().getExecutor().getUniqueId();
+							ItemStack itemInHand = ((Player)ctx.getSource().getExecutor()).getInventory().getItemInMainHand().clone();
 
-						itemInHand.setAmount(1);
+							if (itemInHand.isEmpty()) {
+								throw new RuntimeException("You need to have something in your main hand.");
+							}
 
-						plugin.dbConn.addItemToHoarderItems(itemInHand);
+							itemInHand.setAmount(1);
 
-						PlainTextComponentSerializer plainTextSerializer = PlainTextComponentSerializer.plainText();
-						String itemName = plainTextSerializer.serialize(Component.translatable(itemInHand));
+							plugin.dbConn.addItemToHoarderItems(itemInHand, awardMoney);
 
-						ctx.getSource().getExecutor().sendMessage(
-							MessageFormatter.getAsChatMessageAndDeserialise("admin.itemlist.add-item", Map.ofEntries(
-								Map.entry("%item_name%", itemName)
-							), playerUUID)
-						);
+							PlainTextComponentSerializer plainTextSerializer = PlainTextComponentSerializer.plainText();
+							String itemName = plainTextSerializer.serialize(Component.translatable(itemInHand));
 
-						return Command.SINGLE_SUCCESS;
-					})
+							ctx.getSource().getExecutor().sendMessage(
+								MessageFormatter.getAsChatMessageAndDeserialise("admin.itemlist.add-item", Map.ofEntries(
+									Map.entry("%item_name%", itemName)
+								), playerUUID)
+							);
+
+							return Command.SINGLE_SUCCESS;
+						})
+					)
 				)
 			)
 			.requires(sender -> sender.getSender().hasPermission("clans.admin"))
@@ -147,6 +152,7 @@ public class AdminCommand extends BaseCommand {
 
 						for (int index=0; index < plugin.dbConn.getNumHoarderPrizes(); index++) {
 							String itemName = plugin.dbConn.getHoarderPrizeNameAtIndex(index);
+							if (itemName == null) continue;
 
 							ctx.getSource().getExecutor().sendMessage(
 								MessageFormatter.getAsChatMessageAndDeserialise("admin.prizelist.list-item", Map.ofEntries(
@@ -203,27 +209,29 @@ public class AdminCommand extends BaseCommand {
 		root.then(Commands.literal("admin")
 			.then(Commands.literal("forcestartfromhand")
 				.then(Commands.argument("duration_seconds", IntegerArgumentType.integer(1))
-					.executes(ctx -> {
-						ItemStack itemInHand = ((Player) ctx.getSource().getExecutor()).getInventory().getItemInMainHand().clone();
-						itemInHand.setAmount(1);
+					.then(Commands.argument("award_money", FloatArgumentType.floatArg(0))
+						.executes(ctx -> {
+							ItemStack itemInHand = ((Player) ctx.getSource().getExecutor()).getInventory().getItemInMainHand().clone();
+							itemInHand.setAmount(1);
 
-						if (itemInHand.isEmpty()) {
-							throw new RuntimeException("You need to have something in your main hand.");
-						}
+							if (itemInHand.isEmpty()) {
+								throw new RuntimeException("You need to have something in your main hand.");
+							}
 
-						if (HoarderEventManager.getCurrentEvent() != null) {
-							// end the old event
-							HoarderEventManager.endHoarderEvent(false);
-						}
+							if (HoarderEventManager.getCurrentEvent() != null) {
+								// end the old event
+								HoarderEventManager.endHoarderEvent(false);
+							}
 
-						long curSeconds = System.currentTimeMillis() / 1000;
-						HoarderEventManager.startNewHoarderEvent(new HoarderEventManager.HoarderEvent(
-							itemInHand,
-							curSeconds + ctx.getArgument("duration_seconds", Integer.class)
-						), true);
+							long curSeconds = System.currentTimeMillis() / 1000;
+							HoarderEventManager.startNewHoarderEvent(new HoarderEventManager.HoarderEvent(
+								itemInHand,
+								curSeconds + ctx.getArgument("duration_seconds", Integer.class),
+								curSeconds + ctx.getArgument("award_money", Float.class)
+							), true);
 
-						return Command.SINGLE_SUCCESS;
-					}))).requires(sender -> sender.getSender().hasPermission("hoarder.admin")));
+							return Command.SINGLE_SUCCESS;
+						})))).requires(sender -> sender.getSender().hasPermission("hoarder.admin")));
 
 		root.then(Commands.literal("admin")
 			.then(Commands.literal("forceend")
