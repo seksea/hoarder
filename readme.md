@@ -7,6 +7,10 @@
 
 Bukkit plugin that picks a random item each day, and players have to feed this item to the hoarder for money, the players that feed the most to the hoarder are rewarded with random prizes at the end of the event.
 
+This plugin would make a good addition to any survival or SMP server, adding a bit of competition and gives players a reason to come back each day to a new item to try and collect as much as they can.
+
+This plugin was originally created for the MC Exotic Minecraft server, and you can see it in action on `mcx.life`
+
 ## Features
 - Data is stored in SQLite database
 - Highly configurable via yaml
@@ -28,8 +32,4 @@ Bukkit plugin that picks a random item each day, and players have to feed this i
 ## Setup
 
 1. Drag the plugin .jar file to your servers' `plugins/` directory
-2. (Optional) If you would like to have the custom GUI background pngs, then you must merge the `resourcepack` folder into your servers resource pack)
-
-## Ideas
-
-- Make the furnace take an item at an interval and be shared between clan members, so it's more like a real furnace slowly burning away
+2. Use the `/hoarder admin` commands to add items to the database and start the event.
