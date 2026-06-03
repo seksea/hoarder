@@ -60,6 +60,7 @@ public class FeedMenu extends BaseMenu {
 
 					lItem.customItemStack.lore(MessageFormatter.getAndDeserialiseLines("gui.feed.current-hoarder-item-lore", Map.ofEntries(
 						Map.entry("%item_name%", itemName),
+						Map.entry("%payout%", String.valueOf(currentEvent.awardMoney)),
 						Map.entry("%pretty_time_remaining%", Duration.ofSeconds(currentEvent.endTime - (System.currentTimeMillis()/1000)).toString().substring(2).toLowerCase())
 					)));
 				}
@@ -111,20 +112,23 @@ public class FeedMenu extends BaseMenu {
 				plugin.dbConn.updatePlayerInDatabase(e.getWhoClicked().getUniqueId(), playerData);
 
 				// award money
+				float payout = 0;
 				if (Bukkit.getServer().getPluginManager().getPlugin("Vault") != null) {
 					RegisteredServiceProvider<Economy> rsp = Bukkit.getServer().getServicesManager().getRegistration(Economy.class);
 					if (rsp != null) {
 						Economy econ = rsp.getProvider();
 						if (econ != null) {
 							HoarderEventManager.HoarderEvent currentEvent = HoarderEventManager.getCurrentEvent();
-							econ.depositPlayer(Bukkit.getOfflinePlayer(e.getWhoClicked().getUniqueId()), currentEvent.awardMoney * numItemsfed);
+							payout = currentEvent.awardMoney * numItemsfed;
+							econ.depositPlayer(Bukkit.getOfflinePlayer(e.getWhoClicked().getUniqueId()), payout);
 						}
 					}
 				}
 
 				e.getWhoClicked().sendMessage(
 					MessageFormatter.getAsChatMessageAndDeserialise("gui.feed.fed", Map.ofEntries(
-						Map.entry("%items_fed%", String.valueOf(numItemsfed))
+						Map.entry("%items_fed%", String.valueOf(numItemsfed)),
+						Map.entry("%payout%", String.valueOf(payout))
 					), e.getWhoClicked().getUniqueId())
 				);
 			}

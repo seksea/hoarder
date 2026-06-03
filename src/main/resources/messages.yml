@@ -25,6 +25,7 @@ gui:
   main-menu:
     feed-btn-lore: |
       <grey>The <yellow>hoarder</yellow> is hungry for <green>%item_name%</green>.</grey>
+      <grey>He will return the favour with <green>$%payout%</green>/item.</grey>
       <grey>This event has %pretty_time_remaining% remaining</grey>
       <grey>Left click to feed the <yellow>hoarder</yellow>!</grey>
     player-stats-lore: |
@@ -37,9 +38,10 @@ gui:
     could-not-collect-prize: "<grey>Failed to collect prizes as you need more inventory space!</grey>"
     collected-prize: "<grey>The hoarder has gifted items to your inventory!</grey>"
   feed:
-    fed: "<grey>You fed the <yellow>hoarder</yellow> %items_fed% items.</grey>"
+    fed: "<grey>You fed the <yellow>hoarder</yellow> %items_fed% items. The hoarder spat out <green>$%payout%</green>.</grey>"
     current-hoarder-item-lore: |
       <grey>The <yellow>hoarder</yellow> is hungry for <green>%item_name%</green>.</grey>
+      <grey>He will return the favour with <green>$%payout%</green>/item.</grey>
       <grey>This event has %pretty_time_remaining% remaining</grey>
       
       <grey>Place this item above and press <dark_red>feed</dark_red></grey>

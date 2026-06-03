@@ -58,6 +58,7 @@ public class MainMenu extends BaseMenu {
 
 					lItem.customItemStack.lore(MessageFormatter.getAndDeserialiseLines("gui.main-menu.feed-btn-lore", Map.ofEntries(
 						Map.entry("%item_name%", itemName),
+						Map.entry("%payout%", String.valueOf(currentEvent.awardMoney)),
 						Map.entry("%pretty_time_remaining%", Duration.ofSeconds(currentEvent.endTime - (System.currentTimeMillis()/1000)).toString().substring(2).toLowerCase())
 					)));
 					gui.setItem(curIndex, lItem.getItemStack());
