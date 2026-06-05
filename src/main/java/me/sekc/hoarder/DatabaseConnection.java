@@ -33,7 +33,7 @@ public class DatabaseConnection {
 			"CREATE TABLE IF NOT EXISTS current_event ("
 				+ "	  id 			  INTEGER PRIMARY KEY CHECK (id = 1)," // enforces only one row
 				+ "   item_name		  VARCHAR(256)," // The items' name
-				+ "   data  		  VARCHAR(256),"
+				+ "   data  		  TEXT,"
 				+ "   award_money   FLOAT NOT NULL DEFAULT 0,"
 				+ "   end_time        INTEGER(64)" // unix timestamp
 				+ ")"
