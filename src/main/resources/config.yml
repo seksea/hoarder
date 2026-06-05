@@ -24,7 +24,7 @@ event:
   # - 604800 = 1 week
   # - 86400  = 1 day
   # - 3600   = 1 hour
-  event-length-seconds: 600
+  event-length-seconds: 86400
 
   # Controls how many prizes different positions on the leaderboard will earn,
   # so with the default config ( [3,2,1] ), it would give this result:
