@@ -59,7 +59,7 @@ public class AdminCommand extends BaseCommand {
 					)
 				)
 			)
-			.requires(sender -> sender.getSender().hasPermission("clans.admin"))
+			.requires(sender -> sender.getSender().hasPermission("hoarder.admin"))
 		);
 
 		root.then(Commands.literal("admin")
@@ -83,7 +83,7 @@ public class AdminCommand extends BaseCommand {
 					})
 				)
 			)
-			.requires(sender -> sender.getSender().hasPermission("clans.admin"))
+			.requires(sender -> sender.getSender().hasPermission("hoarder.admin"))
 		);
 
 		root.then(Commands.literal("admin")
@@ -107,7 +107,7 @@ public class AdminCommand extends BaseCommand {
 					)
 				)
 			)
-			.requires(sender -> sender.getSender().hasPermission("clans.admin"))
+			.requires(sender -> sender.getSender().hasPermission("hoarder.admin"))
 		);
 	}
 
@@ -141,7 +141,7 @@ public class AdminCommand extends BaseCommand {
 					})
 				)
 			)
-			.requires(sender -> sender.getSender().hasPermission("clans.admin"))
+			.requires(sender -> sender.getSender().hasPermission("hoarder.admin"))
 		);
 
 		root.then(Commands.literal("admin")
@@ -165,7 +165,7 @@ public class AdminCommand extends BaseCommand {
 					})
 				)
 			)
-			.requires(sender -> sender.getSender().hasPermission("clans.admin"))
+			.requires(sender -> sender.getSender().hasPermission("hoarder.admin"))
 		);
 
 		root.then(Commands.literal("admin")
@@ -189,7 +189,7 @@ public class AdminCommand extends BaseCommand {
 					)
 				)
 			)
-			.requires(sender -> sender.getSender().hasPermission("clans.admin"))
+			.requires(sender -> sender.getSender().hasPermission("hoarder.admin"))
 		);
 	}
 
@@ -261,7 +261,7 @@ public class AdminCommand extends BaseCommand {
 					return Command.SINGLE_SUCCESS;
 				})
 			)
-			.requires(sender -> sender.getSender().hasPermission("clans.admin"))
+			.requires(sender -> sender.getSender().hasPermission("hoarder.admin"))
 		);
 
 		registerItemListCommands(plugin, root);

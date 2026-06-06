@@ -8,3 +8,11 @@ load: POSTWORLD
 softdepend: [ PlaceholderAPI ]
 
 authors: [ sekc ]
+
+permissions:
+  hoarder.admin:
+    description: Allows admins to configure hoarder.
+    default: op
+  hoarder.gui:
+    description: Allows player to open the hoarder gui.
+    default: true
