@@ -21,6 +21,13 @@ public final class Hoarder extends JavaPlugin {
 
 		ConfigurationManager.loadConfiguration();
 
+		// Initialise bStats
+		if (ConfigurationManager.getBool("metrics")) {
+			// You can find the plugin id of your plugins on
+			// the page https://bstats.org/what-is-my-plugin-id
+			new Metrics(this, 31862);
+		}
+
 		try {
 			dbConn = new DatabaseConnection(getConfig().getString("database.filepath"));
 		} catch (Exception e) {

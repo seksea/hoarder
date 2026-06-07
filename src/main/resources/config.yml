@@ -6,6 +6,9 @@
 #                          sekc
 # =======================================
 
+# bStats
+metrics: true
+
 database:
   # The path to the database (leave default if you want SQLite (no setup required) local database,
   # change this if you want to use a different SQL database)
